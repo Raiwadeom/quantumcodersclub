@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumCoders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            overflow-x: hidden;
+        }
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+        }
+        .hero-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #b046ff 0%, #7645d9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(176, 70, 255, 0.5);
+            line-height: 1.2;
+        }
+        .hero-text {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin-top: 1rem;
+        }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #b046ff 0%, #7645d9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(176, 70, 255, 0.5);
+            line-height: 1.2;
+        }
+        .btn {
+            background-color: #7645d9;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(118, 69, 217, 0.5);
+        }
+        /* New Team Card Styles */
+        .card-container {
+            width: 100%;
+            height: 250px; /* Fixed height for card */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid #30363d;
+        }
+        .card-container:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            background-color: #161b22;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+        .card-front {
+            z-index: 2;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        .team-member-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #7645d9;
+            box-shadow: 0 0 15px rgba(118, 69, 217, 0.5);
+        }
+        /* Other Styles */
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            color: #c9d1d9;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #c9d1d9;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .modal-close-btn:hover {
+            transform: scale(1.2);
+        }
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .event-arrow {
+            transition: transform 0.2s ease-in-out;
+            color: #7645d9;
+        }
+        .card:hover .event-arrow {
+            transform: translateX(5px);
+        }
+        /* HOD Section Styles */
+        .hod-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 16px;
+            background-color: #161b22;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease-in-out;
+            border: 1px solid #30363d;
+        }
+        .hod-container:hover {
+            transform: translateY(-5px);
+        }
+        .hod-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #7645d9;
+            box-shadow: 0 0 20px rgba(118, 69, 217, 0.6);
+            margin-bottom: 1.5rem;
+        }
+        .text-overlay {
+            position: relative;
+            width: 100%;
+        }
+        .text-overlay h3 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s ease-in-out;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #b046ff;
+            text-shadow: 0 0 5px rgba(176, 70, 255, 0.5);
+        }
+        .text-overlay .quote {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            font-size: 1.25rem;
+            font-style: italic;
+            color: #c9d1d9;
+            margin: 0;
+        }
+        .hod-container:hover .text-overlay h3 {
+            opacity: 0;
+        }
+        .hod-container:hover .text-overlay .quote {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Hero Section -->
+    <header class="hero-container" id="home">
+        <nav class="absolute top-0 left-0 right-0 p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="#" class="font-bold text-2xl text-white">QuantumCodersClub</a>
+                <div class="space-x-4 hidden md:flex">
+                    <a href="#about" class="hover:text-purple-400 transition-colors">About</a>
+                    <a href="#events" class="hover:text-purple-400 transition-colors">Events</a>
+                    <a href="#team" class="hover:text-purple-400 transition-colors">Team</a>
+                </div>
+            </div>
+        </nav>
+        <h1 class="animate-pulse">QuantumCoders</h1>
+        <p class="hero-text mt-4">
+           Code. Create. Innovate.
+        </p>
+        <div class="mt-8 space-x-4">
+            <a href="#about" class="btn">Learn More</a>
+            <a href="#events" class="btn bg-gray-700 hover:bg-gray-600">Upcoming Events</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-16">
+        <!-- HOD Section -->
+        <section id="hod" class="py-16">
+            <h2 class="section-title text-center mb-10">Head of Department</h2>
+            <div class="hod-container">
+                <img src="https://placehold.co/150x150/30363d/c9d1d9?text=HOD" alt="Head of Department" class="hod-image">
+                <div class="text-overlay">
+                    <h3 class="name">Ms.SheisEr.Zuni</h3>
+                    <p class="quote">"Innovation distinguishes between a leader and a follower."</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-16">
+            <h2 class="section-title text-center mb-10">About Us</h2>
+            <div class="max-w-4xl mx-auto text-lg text-gray-400 leading-relaxed space-y-4">
+                <p>
+                   At Quantum Coders Club, we believe technology is the key to shaping the future — and everyone deserves a chance to be part of it. Founded with the aim of bridging the gap between curiosity and innovation, our club is a platform for students to discover the power of coding, understand new technologies, and build projects that make a difference.
+                    Through bootcamps, workshops, and hands-on learning experiences, we empower learners to think critically, solve real-world problems, and step confidently into the tech-driven world.
+
+                </p>
+                <p>
+                   we strive to create a collaborative and inspiring environment where ideas turn into innovation. Our mission is not just to teach technology, but to spark curiosity, creativity, and problem-solving skills in every member. Whether you're taking your first steps into coding or looking to explore advanced concepts like AI, data science, or web development, we provide the guidance and resources you need. Together, we learn, experiment, and build solutions that prepare us for the future — one line of code at a time. Join us to learn, innovate, and grow together.
+                </p>
+            </div>
+        </section>
+
+        <!-- Upcoming Events Section -->
+        <section id="events" class="py-16">
+            <h2 class="section-title text-center mb-10">Upcoming Events</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Hackathon Card -->
+                <div class="card cursor-pointer group hover:bg-purple-950 transition-colors" onclick="showEventModal('Hackathon: Quantum Leap', 'October 26, 2024', 'Join us for a 24-hour coding marathon! Collaborate with fellow developers to build innovative projects from scratch. Build a project related to sustainable technology, AI-powered solutions, or open-source tools. Form teams of up to four people. The top three projects will win cash prizes and mentorship opportunities.')">
+                    <div class="event-header">
+                        <h3 class="text-xl font-bold text-purple-300 group-hover:text-white transition-colors">Hackathon: Quantum Leap</h3>
+                        <i class="fas fa-arrow-right event-arrow text-2xl group-hover:text-white"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 mb-2">Date: October 26, 2024</p>
+                    <p class="text-gray-400">Join us for a 24-hour coding marathon! Collaborate with fellow developers to build innovative projects from scratch.</p>
+                </div>
+                <!-- Competitive Programming Card -->
+                <div class="card cursor-pointer group hover:bg-purple-950 transition-colors" onclick="showEventModal('Competitive Programming: Code-Off Challenge', 'November 15, 2024', 'Test your algorithmic skills against the best. Solve complex problems under time pressure and climb the leaderboard. This event features a series of challenging algorithmic problems. Participants will have three hours to solve as many problems as possible. This is a great opportunity to sharpen your problem-solving skills and connect with the competitive programming community.')">
+                    <div class="event-header">
+                        <h3 class="text-xl font-bold text-purple-300 group-hover:text-white transition-colors">Competitive Programming: Code-Off Challenge</h3>
+                        <i class="fas fa-arrow-right event-arrow text-2xl group-hover:text-white"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 mb-2">Date: November 15, 2024</p>
+                    <p class="text-gray-400">Test your algorithmic skills against the best. Solve complex problems under time pressure and climb the leaderboard.</p>
+                </div>
+                <!-- Workshop Card -->
+                <div class="card cursor-pointer group hover:bg-purple-950 transition-colors" onclick="showEventModal('AI & Ethics Workshop', 'December 5, 2024', 'Learn about the ethical considerations of AI development and how to build responsible systems. Led by industry experts. This hands-on workshop will cover topics such as data privacy, algorithmic bias, and fairness in AI. Participants will work through case studies and engage in group discussions to explore these critical issues. No prior knowledge of AI is required.')">
+                    <div class="event-header">
+                        <h3 class="text-xl font-bold text-purple-300 group-hover:text-white transition-colors">AI & Ethics Workshop</h3>
+                        <i class="fas fa-arrow-right event-arrow text-2xl group-hover:text-white"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 mb-2">Date: December 5, 2024</p>
+                    <p class="text-gray-400">Learn about the ethical considerations of AI development and how to build responsible systems. Led by industry experts.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="team" class="py-16">
+            <h2 class="section-title text-center mb-10">Meet the Team</h2>
+            <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <!-- Member 1 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./om.jpeg" alt="John Doe" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">Om </h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">President</h4>
+                            <p class="text-gray-500 text-sm">A visionary coder with a passion for building scalable solutions.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 2 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./images 5.jfif" alt="Jane Austen" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">XYZ</h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Vice President</h4>
+                            <p class="text-gray-500 text-sm">Specializing in creating intuitive and beautiful user interfaces.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 3 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./img 3.jpg" alt="Sarah Miller" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">ZZZ</h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Pr Lead</h4>
+                            <p class="text-gray-500 text-sm">Harnessing the power of data to drive intelligent business decisions.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 4 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./img 6.jpg" alt="Michael Smith" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">XXz</h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Technical Lead</h4>
+                            <p class="text-gray-500 text-sm">Designing scalable and resilient cloud infrastructures.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- New Member 5 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./img 7.jpg" alt="Emily Lopez" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">YZX</h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Event lead</h4>
+                            <p class="text-gray-500 text-sm">Focused on backend development and API design.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- New Member 6 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./om.jpeg" alt="Ryan Johnson" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">ZFZ/h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Member Lead</h4>
+                            <p class="text-gray-500 text-sm">Protecting our digital assets with robust security protocols.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- New Member 7 -->
+                <div class="card-container">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="./assests/img 6.jpg" alt="Angela White" class="team-member-image mb-4">
+                            <h3 class="text-xl font-bold text-purple-300">ZXZ</h3>
+                        </div>
+                        <div class="card-face card-back text-center">
+                            <h4 class="text-xl font-bold text-purple-300 mb-2">Creative Lead<</h4>
+                            <p class="text-gray-500 text-sm">Ensuring all projects are delivered on time and on budget.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-12 text-center text-gray-500 border-t border-gray-700">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0">
+            <!-- Copyright and Email -->
+            <div class="flex flex-col items-center space-y-2">
+                <p>&copy; 2024 QuantumCoders. All rights reserved.</p>
+                <p class="text-gray-400 text-base font-bold">
+                    Email: <a href="mailto:quantumcoder@gmail.com" class="hover:text-purple-400 transition-colors">quantumcoder@gmail.com</a>
+                </p>
+            </div>
+            
+            <!-- Social Links Section -->
+            <div class="flex flex-col items-center space-y-4">
+                <p class="text-gray-400 text-lg font-bold">Connect With Us</p>
+                <div class="flex space-x-8 text-3xl text-gray-400">
+                    <a href="https://www.linkedin.com/in/quantumcoders" target="_blank" class="hover:text-purple-400 transition-colors"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://github.com/quantumcoders" target="_blank" class="hover:text-purple-400 transition-colors"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+
+            <!-- Legal Links Section -->
+            <div class="flex flex-col items-center space-y-2">
+                <p class="text-gray-400 text-lg font-bold">Legal</p>
+                <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+                    <a href="javascript:void(0)" onclick="showInfoModal('Privacy Policy', 'This is a placeholder for our Privacy Policy. We take your privacy seriously and are committed to protecting your personal data. We will collect, use, and store your information in accordance with applicable laws and regulations. For more detailed information, please contact us directly.')" class="text-base font-bold hover:text-purple-400 transition-colors">Privacy Policy</a>
+                    <a href="javascript:void(0)" onclick="showInfoModal('Terms & Conditions', 'These are the placeholder Terms & Conditions for using our website and services. By accessing this site, you agree to be bound by these terms. This document outlines the rules and regulations for the use of QuantumCoders\'s website. Any use of the site implies your acceptance of these terms. For a complete version, please reach out to our team.')" class="text-base font-bold hover:text-purple-400 transition-colors">Terms & Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for Event Details -->
+    <div id="event-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="hideEventModal()">&times;</button>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-purple-300"></h3>
+            <p id="modal-date" class="text-sm text-gray-400 mb-4"></p>
+            <p id="modal-description" class="text-lg leading-relaxed text-gray-300"></p>
+        </div>
+    </div>
+
+    <!-- Modal for Info Popups (Privacy, T&C) -->
+    <div id="info-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="hideInfoModal()">&times;</button>
+            <h3 id="info-modal-title" class="text-2xl font-bold mb-4 text-purple-300"></h3>
+            <p id="info-modal-content" class="text-lg leading-relaxed text-gray-300"></p>
+        </div>
+    </div>
+
+    <!-- GSAP and Three.js Script -->
+    <script>
+        let scene, camera, renderer, starField;
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            camera.position.z = 20;
+
+            // Starfield
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 5000;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 200;
+                positions[i + 1] = (Math.random() - 0.5) * 200;
+                positions[i + 2] = (Math.random() - 0.5) * 200;
+            }
+
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xe0e8ff, // Slightly softer star color
+                size: 0.05,      // Smaller points for a more realistic feel
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                // Removed sizeAttenuation to ensure uniform size and avoid a square artifact
+            });
+
+            starField = new THREE.Points(starGeometry, starMaterial);
+            scene.add(starField);
+
+            // GSAP Animations
+            gsap.to(camera.position, {
+                z: 2,
+                duration: 2,
+                ease: "power2.out"
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Rotate the starfield for a looping effect
+            starField.rotation.x += 0.0005;
+            starField.rotation.y += 0.0005;
+
+            renderer.render(scene, camera);
+        }
+
+        function showEventModal(title, date, description) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-date').innerText = `Date: ${date}`;
+            document.getElementById('modal-description').innerText = description;
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function hideEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function showInfoModal(title, content) {
+            document.getElementById('info-modal-title').innerText = title;
+            document.getElementById('info-modal-content').innerText = content;
+            document.getElementById('info-modal').classList.remove('hidden');
+        }
+
+        function hideInfoModal() {
+            document.getElementById('info-modal').classList.add('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>
